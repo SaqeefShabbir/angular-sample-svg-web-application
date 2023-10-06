@@ -25,7 +25,21 @@
     position: fixed;
     bottom: 10px;
     left: 32%;
-    width: 66.7%;
+    width: 40%;
+}
+
+#svg-container-merge-link {
+    position: fixed;
+    bottom: 10px;
+    left: 80%;
+    width: 100%;
+}
+
+#svg-container-download-link {
+    position: fixed;
+    bottom: 10px;
+    left: 90%;
+    width: 100%;
 }
 
 #svg-container {
