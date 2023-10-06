@@ -1,0 +1,35 @@
+#items-container {
+    height: 800px;
+    background-color: beige;
+    width: 30%;
+    margin-right: 1%;
+    margin-left: 1%;
+    overflow: scroll;
+}
+
+.draggableComponent {
+    height: 100px;
+    width: 100px;
+    max-width: 100px;
+    display: inline-block;
+}
+
+#items-container-button {
+    position: fixed;
+    bottom: 10px;
+    width: 29%;
+    margin-right: 1%;
+}
+
+#svg-container-button {
+    position: fixed;
+    bottom: 10px;
+    left: 32%;
+    width: 66.7%;
+}
+
+#svg-container {
+    border: 3px dashed #000;
+    background-color: #CCC;
+    width: 66.7%;
+}
