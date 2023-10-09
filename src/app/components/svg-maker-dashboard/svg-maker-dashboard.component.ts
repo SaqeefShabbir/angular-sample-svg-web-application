@@ -195,13 +195,64 @@ export class SvgMakerDashboardComponent {
   }
 
   onMergeLinkClick() {
-    
+    let svgPlanDiv = document.getElementById("svgPlanComponentDiv")!;
+    let items = document.querySelectorAll('#svg-container .draggableComponent');
+    let itemsLength = items.length;
+
+    if (svgPlanDiv) {
+      for (let i = 0; i < itemsLength; i++) {
+        // Get the top, left coordinates of two elements
+        var svgPlan = svgPlanDiv.getElementsByTagName('svg')[0];
+        var svgPlanDivRect = svgPlanDiv.getBoundingClientRect();
+        var svgItemDiv = items[i];
+        var itemRect = svgItemDiv.getBoundingClientRect();
+
+        // Calculate the top and left positions
+        var top = (itemRect.top - svgPlanDivRect.top) / 1.5;
+        var left = (itemRect.left - svgPlanDivRect.left) / 1.5;
+
+        console.log(svgPlanDivRect)
+        console.log(itemRect)
+
+        console.log(top)
+        console.log(left)
+
+        // var svgPlanRect = svgPlan.getBoundingClientRect();
+        var foreignObject = document.createElementNS('http://www.w3.org/2000/svg', "foreignObject");
+        var svgItem = svgItemDiv.getElementsByTagName('svg')[0];
+        // var x = (parseInt((items[i] as any).style.left.toString()) - parseInt(svgPlanRect.left.toString()));
+        // var y = (parseInt((items[i] as any).style.top.toString()) - parseInt(svgPlanRect.top.toString()));
+        var width = parseInt((svgItem as any).getAttribute("width")!) - 34;
+        var height = parseInt((svgItem as any).getAttribute("height")!) - 34;
+        (svgItem as any).setAttribute("width", width);
+        (svgItem as any).setAttribute("height", height);
+        (svgItem as any).setAttribute("x", "0px");
+        (svgItem as any).setAttribute("y", "0px");
+        foreignObject.setAttribute("width", width.toString());
+        foreignObject.setAttribute("height", height.toString());
+        foreignObject.setAttribute("x", left.toString());
+        foreignObject.setAttribute("y", top.toString());
+        foreignObject.appendChild(svgItem);
+        svgPlan.appendChild(foreignObject);
+
+        // console.log("left", parseInt((items[i] as any).style.left))
+        // console.log("top", parseInt((items[i] as any).style.top))
+
+        // console.log("rectleft", parseInt(rect.left.toString()))
+        // console.log("recttop", parseInt(rect.top.toString()))
+
+        console.log("x", parseInt(left.toString()))
+        console.log("y", parseInt(top.toString()))
+
+        svgItemDiv.remove()
+      }
+    }
   }
 
   onDownloadLinkClick() {
     //get svg element.
     var svg = document.getElementById("svgPlanComponentDiv")!.getElementsByTagName('svg')[0];
-    var name = 'svg_' + this.svgDownloadCount;
+    var name = 'image_' + this.svgDownloadCount;
     saveSvg(svg, name);
     this.svgDownloadCount++;
   }
@@ -380,7 +431,6 @@ function saveSvg(svgElement: any, svgName: any) {
   let anchorElement = document.getElementById("svg-container-download-link")! as HTMLAnchorElement;
   anchorElement.href = svgUrl;
   anchorElement.download = svgName;
-  anchorElement.click();
 }
 
 async function getSvgText(file: File) : Promise<any> {
