@@ -13,40 +13,6 @@ export class SvgMakerDashboardComponent {
 
   public svgDownloadCount: number = 1;
 
-  async onFileSelected(e: Event) {
-    this.selectedFile = (e.target as HTMLInputElement).files![0];
-
-    (e.target as HTMLInputElement).value = '';
-
-    let itemsConatinerDiv = document.getElementById('items-container');
-    let draggableComponent = document.getElementById('draggableComponent');
-    let newDraggableComponent = draggableComponent?.cloneNode(true) as HTMLDivElement;
-
-    newDraggableComponent.setAttribute("id", "svgComponent_" + this.svgCount);
-
-    newDraggableComponent.removeAttribute("hidden");
-
-    let svgText = await getSvgText(this.selectedFile);
-
-    newDraggableComponent.innerHTML += svgText;
-
-    newDraggableComponent.addEventListener("dragstart", this.drag);
-    newDraggableComponent.addEventListener("mousemove", this.onMouseMove);
-    newDraggableComponent.addEventListener("mousedown", this.onMouseDown);
-    newDraggableComponent.addEventListener("mouseup", this.onMouseUp);
-    newDraggableComponent.addEventListener("mouseleave", this.onMouseLeave);
-
-    itemsConatinerDiv?.appendChild(newDraggableComponent);
-
-    let embeddedSvg = newDraggableComponent.getElementsByTagName('svg')[0];
-
-    embeddedSvg.setAttribute('id', 'svgComponent_' + this.svgCount + '_svg');
-    embeddedSvg.setAttribute('height', '100');
-    embeddedSvg.setAttribute('width', '100');
-    
-    this.svgCount++;
-  }
-
   async onPlanFileSelected(e: Event) {
     this.selectedFile = (e.target as HTMLInputElement).files![0];
 
@@ -83,53 +49,6 @@ export class SvgMakerDashboardComponent {
     ev.dataTransfer.setData("text", svgElement.id);
   }
 
-  async dropInItemContainer(ev: any) {
-    ev.preventDefault();
-    
-    var data = ev.dataTransfer.getData("text").split('_');
-
-    var holder = data[0];
-    var id = data[1];
-    var name = data[2];
-
-    if (holder == 'svgComponent') {
-      var divElement = document.getElementById(holder + "_" + id);
-      divElement?.appendChild(document.getElementById(ev.dataTransfer.getData("text"))!);
-
-      // start of positioning code
-      const divPoint = this.getDivPointByItems(event, divElement);
-      this.setPosition(divElement, { x: divPoint.x, y: divPoint.y  })
-    }
-    else if (holder == 'svgContainer') {
-      let itemsConatinerDiv = document.getElementById('items-container');
-      let draggableComponent = document.getElementById('draggableComponent');
-      let newDraggableComponent = draggableComponent?.cloneNode(true) as HTMLDivElement;
-
-      newDraggableComponent.setAttribute("id", "svgComponent_" + id);
-
-      newDraggableComponent.removeAttribute("hidden");
-
-      newDraggableComponent.appendChild(document.getElementById(ev.dataTransfer.getData("text"))!);
-
-      newDraggableComponent.addEventListener("dragstart", this.drag);
-      newDraggableComponent.addEventListener("mousemove", this.onMouseMove);
-      newDraggableComponent.addEventListener("mousedown", this.onMouseDown);
-      newDraggableComponent.addEventListener("mouseup", this.onMouseUp);
-      newDraggableComponent.addEventListener("mouseleave", this.onMouseLeave);
-
-      itemsConatinerDiv?.appendChild(newDraggableComponent);
-
-      let embeddedSvg = newDraggableComponent.getElementsByTagName('svg')[0];
-
-      embeddedSvg.setAttribute('id', 'svgComponent_' + id + '_svg');
-      embeddedSvg.setAttribute('height', '100');
-      embeddedSvg.setAttribute('width', '100');
-
-      var element = document.getElementById(holder + "_" + id);
-      element?.remove();
-    }
-  }
-
   dropInSvgContainer(ev: any) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text").split('_');
@@ -137,9 +56,10 @@ export class SvgMakerDashboardComponent {
     var holder = data[0];
     var id = data[1];
     var name = data[2];
+    var count = data[3];
 
     if (holder == 'svgContainer') {
-      var divElement = document.getElementById(holder + "_" + id);
+      var divElement = document.getElementById(holder + "_" + id + "_" + count);
       divElement?.appendChild(document.getElementById(ev.dataTransfer.getData("text"))!);
 
       // start of positioning code
@@ -151,11 +71,15 @@ export class SvgMakerDashboardComponent {
       let draggableComponent = document.getElementById('draggableComponent');
       let newDraggableComponent = draggableComponent?.cloneNode(true) as HTMLDivElement;
 
-      newDraggableComponent.setAttribute("id", "svgContainer_" + id);
+      newDraggableComponent.setAttribute("id", "svgContainer_" + id + "_" + this.svgCount);
 
       newDraggableComponent.removeAttribute("hidden");
 
-      newDraggableComponent.appendChild(document.getElementById(ev.dataTransfer.getData("text"))!)
+      let svgComponent = document.getElementById(ev.dataTransfer.getData("text"))!;
+
+      let newSvgComponent = svgComponent?.cloneNode(true) as any;
+
+      newDraggableComponent.appendChild(newSvgComponent);
 
       newDraggableComponent.addEventListener("dragstart", this.drag);
       newDraggableComponent.addEventListener("mousemove", this.onMouseMove);
@@ -168,25 +92,13 @@ export class SvgMakerDashboardComponent {
 
       let embeddedSvg = newDraggableComponent.getElementsByTagName('svg')[0];
 
-      embeddedSvg.setAttribute('id', 'svgContainer_' + id + '_svg');
+      embeddedSvg.setAttribute('id', 'svgContainer_' + id + '_svg' + '_' + this.svgCount);
       embeddedSvg.setAttribute('height', '100');
       embeddedSvg.setAttribute('width', '100');
 
-      var element = document.getElementById(holder + "_" + id);
-      element?.remove();
+      this.svgCount++;
     }
   }
-
-  // drop(ev: any) {
-  //   ev.preventDefault();
-  //   var data = ev.dataTransfer.getData("text");
-  //   ev.target.appendChild(document.getElementById(data));
-
-  //   document.getElementById(data)!.setAttribute('draggable', 'true');
-
-  //   const svgPoint = this.getSVGPoint(event, document.getElementById(data));
-  //   this.setPosition(document.getElementById(data), { x: svgPoint.x, y: svgPoint.y  });
-  // }
 
   private setPosition(element: any, coord: { x: any, y: any }) {
     element.style.position = "absolute";
@@ -217,29 +129,21 @@ export class SvgMakerDashboardComponent {
         console.log(top)
         console.log(left)
 
-        // var svgPlanRect = svgPlan.getBoundingClientRect();
         var foreignObject = document.createElementNS('http://www.w3.org/2000/svg', "foreignObject");
         var svgItem = svgItemDiv.getElementsByTagName('svg')[0];
-        // var x = (parseInt((items[i] as any).style.left.toString()) - parseInt(svgPlanRect.left.toString()));
-        // var y = (parseInt((items[i] as any).style.top.toString()) - parseInt(svgPlanRect.top.toString()));
         var width = parseInt((svgItem as any).getAttribute("width")!) - 34;
         var height = parseInt((svgItem as any).getAttribute("height")!) - 34;
         (svgItem as any).setAttribute("width", width);
         (svgItem as any).setAttribute("height", height);
         (svgItem as any).setAttribute("x", "0px");
         (svgItem as any).setAttribute("y", "0px");
+        foreignObject.setAttribute("id", "svg_" + (i + 1));
         foreignObject.setAttribute("width", width.toString());
         foreignObject.setAttribute("height", height.toString());
         foreignObject.setAttribute("x", left.toString());
         foreignObject.setAttribute("y", top.toString());
         foreignObject.appendChild(svgItem);
         svgPlan.appendChild(foreignObject);
-
-        // console.log("left", parseInt((items[i] as any).style.left))
-        // console.log("top", parseInt((items[i] as any).style.top))
-
-        // console.log("rectleft", parseInt(rect.left.toString()))
-        // console.log("recttop", parseInt(rect.top.toString()))
 
         console.log("x", parseInt(left.toString()))
         console.log("y", parseInt(top.toString()))
@@ -313,6 +217,12 @@ export class SvgMakerDashboardComponent {
 
       console.log(svgElement)
     }
+    
+    if (event.shiftKey)
+    {
+      let divElement = event.currentTarget as HTMLDivElement;
+      divElement.remove();
+    }
   }
 
   onMouseMove(event: any): void {
@@ -323,28 +233,8 @@ export class SvgMakerDashboardComponent {
       let id = data[1];
       let number = data[2];
 
-      if (holder == 'svgComponent') {
-        // const divPoint = this.getDivPointByItems(event, this.draggingElement);
-        // this.setPosition(this.draggingElement, { x: divPoint.x, y: divPoint.y  })
-
-        // const conatiner = document.getElementById('items-container');
-        // const itemsRect = conatiner!.getBoundingClientRect();
-
-        // const rect: any = {};
-        // rect.x = itemsRect.x + event.offsetX;
-        // rect.y = itemsRect.y + event.offsetY;
-
-        // console.log(itemsRect)
-
-        // this.draggingElement.style.position = "absolute";
-        // this.draggingElement.style.top = rect.y + "px";
-        // this.draggingElement.style.left = rect.x + "px";
-      }
-      else if (holder == 'svgContainer') {
-        // const divPoint = this.getDivPointBySvg(event, this.draggingElement);
-        // this.setPosition(this.draggingElement, { x: divPoint.x, y: divPoint.y  })
-
-        const conatiner = document.getElementById(holder + '_' + id);
+      if (holder == 'svgContainer') {
+        const conatiner = document.getElementById(holder + '_' + id + '_' + number);
         const svgRect = conatiner!.getBoundingClientRect();
 
         const rect: any = {};
@@ -371,9 +261,6 @@ export class SvgMakerDashboardComponent {
 
     console.log(rect)
 
-    // const CTM = element.getScreenCTM();
-    // const divPoint = rect.matrixTransform(CTM.inverse());
-
     return rect;
   }
 
@@ -388,9 +275,6 @@ export class SvgMakerDashboardComponent {
     rect.y = svgRect.y + event.offsetY;
 
     console.log(rect)
-
-    // const CTM = element.getScreenCTM();
-    // const divPoint = rect.matrixTransform(CTM.inverse());
 
     return rect;
   }
